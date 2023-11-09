@@ -102,6 +102,8 @@ pub trait SellNftsContract {
             for _ in 0..amount_of_tokens {
                 self.mint_single_nft(&caller, &collection_identifier);
             }
+
+            self.user_premium_mints(&caller).update(|premium_mints| *premium_mints -= amount_of_tokens);
         }
 
         if identifier == first_token_payment.token_identifier && identifier == second_token_payment.token_identifier {
