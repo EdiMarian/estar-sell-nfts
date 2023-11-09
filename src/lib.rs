@@ -98,7 +98,7 @@ pub trait SellNftsContract {
             require!(amount == third_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
             require!(amount_of_tokens <= user_premium_mints, "You don't have enough premium mints!");
 
-            // mint logic
+            // premium mint logic
             for _ in 0..amount_of_tokens {
                 self.mint_single_nft(&caller, &collection_identifier);
             }
@@ -130,6 +130,7 @@ pub trait SellNftsContract {
         let nonce = nfts_left.get(random_nonce_index);
 
         self.send().direct_esdt(address, collection_identifier, nonce, &BigUint::from(1u64));
+        self.nonces().swap_remove(random_nonce_index);
     }
 
     fn generate_random_number(&self, max: usize) -> usize {
