@@ -12,4 +12,8 @@ pub trait SellNftsContract {
     #[view(getCollection)]
     #[storage_mapper("collection")]
     fn collection(&self) -> SingleValueMapper<TokenIdentifier>;
+
+    #[view(getNonces)]
+    #[storage_mapper("nonces")]
+    fn nonces(&self) -> SetMapper<u64>;
 }
