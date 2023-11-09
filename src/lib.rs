@@ -21,17 +21,16 @@ pub trait SellNftsContract {
             let (identifier, nonce, _amount) = nft.into_tuple();
             require!(identifier == collection_identifier, "Invalid NFT identifier!");
 
-            self.nonces().insert(nonce);
+            self.nonces().push(&nonce);
         }
     }
 
     #[only_owner]
     #[payable("*")]
     #[endpoint(removeNfts)]
-    fn remove_nfts(&self, nonces: MultiValueEncoded<u64>) {
-        for nonce in nonces.into_iter() {
-            require!(self.nonces().contains(&nonce), "This NFT doesn't exist in this SC.");
-            self.nonces().remove(&nonce);
+    fn remove_nfts(&self, nonces_index: MultiValueEncoded<usize>) {
+        for nonce_index in nonces_index.into_iter() {
+            self.nonces().swap_remove(nonce_index);
         }
     }
 
@@ -83,12 +82,14 @@ pub trait SellNftsContract {
             ||
             identifier == third_token_payment.token_identifier
             , "Invalid token payment!");
-    
-        let nonces_left = self.nonces().len();
-        require!(nonces_left >= amount_of_tokens as usize, "Not enough NFTs to mint.");
-        let mut user_mints = self.user_mints(&caller).get();
-        let user_premium_mints = self.user_premium_mints(&caller).get();
+            
+            let nonces_left = self.nonces().len();
+            require!(nonces_left >= amount_of_tokens as usize, "Not enough NFTs to mint.");
+            let mut user_mints = self.user_mints(&caller).get();
+            let user_premium_mints = self.user_premium_mints(&caller).get();
 
+        let collection_identifier = self.collection().get();
+            
         if identifier == first_token_payment.token_identifier {
             require!(amount == first_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
         } else if identifier == second_token_payment.token_identifier {
@@ -99,7 +100,7 @@ pub trait SellNftsContract {
 
             // mint logic
             for _ in 0..amount_of_tokens {
-                self.mint_single_nft(&caller);
+                self.mint_single_nft(&caller, &collection_identifier);
             }
         }
 
@@ -118,13 +119,23 @@ pub trait SellNftsContract {
 
             // mint logic
             for _ in 0..amount_of_tokens {
-                self.mint_single_nft(&caller);
+                self.mint_single_nft(&caller, &collection_identifier);
             }
         }
     }
 
-    fn mint_single_nft(&self, address: &ManagedAddress) {
+    fn mint_single_nft(&self, address: &ManagedAddress, collection_identifier: &TokenIdentifier) {
+        let nfts_left = self.nonces();
+        let random_nonce_index = self.generate_random_number(nfts_left.len()); 
+        let nonce = nfts_left.get(random_nonce_index);
 
+        self.send().direct_esdt(address, collection_identifier, nonce, &BigUint::from(1u64));
+    }
+
+    fn generate_random_number(&self, max: usize) -> usize {
+        let mut rand_source = RandomnessSource::new();
+
+        rand_source.next_usize_in_range(1, max + 1)
     }
 
     #[view(getCollection)]
@@ -133,7 +144,7 @@ pub trait SellNftsContract {
 
     #[view(getNonces)]
     #[storage_mapper("nonces")]
-    fn nonces(&self) -> SetMapper<u64>;
+    fn nonces(&self) -> VecMapper<u64>;
 
     #[view(getFirstTokenPayment)]
     #[storage_mapper("first_token_payment")]
