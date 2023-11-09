@@ -44,6 +44,17 @@ pub trait SellNftsContract {
         self.first_token_payment().set(token_payment);
     }
 
+    #[only_owner]
+    #[endpoint(setSecondTokenPayment)]
+    fn set_second_token_payment(&self, identifier: TokenIdentifier, amount: BigUint) {
+        require!(identifier.is_valid_esdt_identifier(), "Invalid token identifier!");
+        require!(amount > BigUint::zero(), "Invalid amount!");
+
+        let token_payment = EsdtTokenPayment::new(identifier, 0, amount);
+
+        self.second_token_payment().set(token_payment);
+    }
+
     #[view(getCollection)]
     #[storage_mapper("collection")]
     fn collection(&self) -> SingleValueMapper<TokenIdentifier>;
