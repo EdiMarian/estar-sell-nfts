@@ -72,7 +72,7 @@ setNfts() {
     --gas-limit=12000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
     --function="MultiESDTNFTTransfer" \
-    --arguments $ADDRESS 1 $COLLECTION_ID_HEX 1 1 $method_name \
+    --arguments $ADDRESS 3 $COLLECTION_ID_HEX 1 1 $COLLECTION_ID_HEX 2 1 $COLLECTION_ID_HEX 3 1 $method_name \
     --send \
     --outfile="${PROJECT}/interactions/logs/distribute.json"
 }
