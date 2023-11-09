@@ -75,10 +75,24 @@ pub trait SellNftsContract {
         let caller = self.blockchain().get_caller();
         let first_token_payment = self.first_token_payment().get();
         let second_token_payment = self.second_token_payment().get();
-        require!(identifier == first_token_payment.token_identifier || identifier == second_token_payment.token_identifier, "Invalid token payment!");
+        let third_token_payment = self.third_token_payment().get();
+        require!(
+            identifier == first_token_payment.token_identifier
+            ||
+            (identifier == second_token_payment.token_identifier && second_token_payment.token_nonce == nonce)
+            ||
+            identifier == third_token_payment.token_identifier
+            , "Invalid token payment!");
     
-        // let nonces_left = self.nonces().len();
-        // require!(nonces_left >= amount_of_tokens as usize, "Not enough NFTs to mint.");
+        let nonces_left = self.nonces().len();
+        require!(nonces_left >= amount_of_tokens as usize, "Not enough NFTs to mint.");
+        let user_mints = self.user_mints(&caller).get();
+
+        if identifier == first_token_payment.token_identifier {
+            require!(amount == first_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
+        } else if (identifier == second_token_payment.token_identifier) {
+            require!(amount == second_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
+        }
 
         // if identifier == second_token_payment.token_identifier {
         //     require!(self.user_mints(&caller).get() >= 3u64, "You aren't eligible to mint with this token!");
