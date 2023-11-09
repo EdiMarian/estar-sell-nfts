@@ -87,13 +87,20 @@ pub trait SellNftsContract {
         let nonces_left = self.nonces().len();
         require!(nonces_left >= amount_of_tokens as usize, "Not enough NFTs to mint.");
         let mut user_mints = self.user_mints(&caller).get();
+        let user_premium_mints = self.user_premium_mints(&caller).get();
 
         if identifier == first_token_payment.token_identifier {
             require!(amount == first_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
-        } else if (identifier == second_token_payment.token_identifier) {
+        } else if identifier == second_token_payment.token_identifier {
             require!(amount == second_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
         } else {
             require!(amount == third_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
+            require!(amount_of_tokens <= user_premium_mints, "You don't have enough premium mints!");
+
+            // mint logic
+            for _ in 0..amount_of_tokens {
+                self.mint_single_nft(&caller);
+            }
         }
 
         if identifier == first_token_payment.token_identifier && identifier == second_token_payment.token_identifier {
@@ -104,22 +111,20 @@ pub trait SellNftsContract {
                 self.user_premium_mints(&caller).update(|mints| *mints += premium_mints);
 
                 let remaining_user_mints = user_mints - (premium_mints * MULTIPLIER);
-                self.user_mints(&caller).set(remaning_user_mints);
+                self.user_mints(&caller).set(remaining_user_mints);
             } else {
                 self.user_mints(&caller).set(user_mints);
             }
-        }
 
-        // if identifier == second_token_payment.token_identifier {
-        //     require!(self.user_mints(&caller).get() >= 3u64, "You aren't eligible to mint with this token!");
-        //     require!(amount == second_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
-        // } else {
-        //     require!(amount == first_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
-        //     self.user_mints(&caller).update(|nb_of_mints| *nb_of_mints += 1);
-        // }
+            // mint logic
+            for _ in 0..amount_of_tokens {
+                self.mint_single_nft(&caller);
+            }
+        }
     }
 
     fn mint_single_nft(&self, address: &ManagedAddress) {
+
     }
 
     #[view(getCollection)]
