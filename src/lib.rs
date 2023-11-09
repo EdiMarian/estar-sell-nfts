@@ -55,6 +55,15 @@ pub trait SellNftsContract {
         self.second_token_payment().set(token_payment);
     }
 
+    #[payable("*")]
+    #[endpoint(mint)]
+    fn mint(&self) {
+        let (identifier, nonce, amount) = self.call_value().single_esdt().into_tuple();
+        let first_token_payment = self.first_token_payment().get();
+        let second_token_payment = self.second_token_payment().get();
+        require!(identifier == first_token_payment.token_identifier || identifier == second_token_payment.token_identifier, "Invalid token payment!");
+    }
+
     #[view(getCollection)]
     #[storage_mapper("collection")]
     fn collection(&self) -> SingleValueMapper<TokenIdentifier>;
