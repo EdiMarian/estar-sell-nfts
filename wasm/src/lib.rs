@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                            4
+// Endpoints:                            6
 // Async Callback (empty):               1
-// Total number of exported functions:   6
+// Total number of exported functions:   8
 
 #![no_std]
 
@@ -26,6 +26,8 @@ multiversx_sc_wasm_adapter::endpoints! {
         removeNfts => remove_nfts
         getCollection => collection
         getNonces => nonces
+        getFirstTokenPayment => first_token_payment
+        getSecondTokenPayment => second_token_payment
     )
 }
 

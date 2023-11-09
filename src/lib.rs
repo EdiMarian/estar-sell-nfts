@@ -40,4 +40,12 @@ pub trait SellNftsContract {
     #[view(getNonces)]
     #[storage_mapper("nonces")]
     fn nonces(&self) -> SetMapper<u64>;
+
+    #[view(getFirstTokenPayment)]
+    #[storage_mapper("first_token_payment")]
+    fn first_token_payment(&self) -> SingleValueMapper<EsdtTokenPayment>;
+
+    #[view(getSecondTokenPayment)]
+    #[storage_mapper("second_token_payment")]
+    fn second_token_payment(&self) -> SingleValueMapper<EsdtTokenPayment>;
 }
