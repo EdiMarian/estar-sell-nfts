@@ -86,12 +86,28 @@ pub trait SellNftsContract {
     
         let nonces_left = self.nonces().len();
         require!(nonces_left >= amount_of_tokens as usize, "Not enough NFTs to mint.");
-        let user_mints = self.user_mints(&caller).get();
+        let mut user_mints = self.user_mints(&caller).get();
 
         if identifier == first_token_payment.token_identifier {
             require!(amount == first_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
         } else if (identifier == second_token_payment.token_identifier) {
             require!(amount == second_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
+        } else {
+            require!(amount == third_token_payment.amount * amount_of_tokens, "Payment amount invalid!");
+        }
+
+        if identifier == first_token_payment.token_identifier && identifier == second_token_payment.token_identifier {
+            user_mints += amount_of_tokens;
+            let premium_mints = user_mints / MULTIPLIER;
+
+            if premium_mints > 0u64 {
+                self.user_premium_mints(&caller).update(|mints| *mints += premium_mints);
+
+                let remaining_user_mints = user_mints - (premium_mints * MULTIPLIER);
+                self.user_mints(&caller).set(remaning_user_mints);
+            } else {
+                self.user_mints(&caller).set(user_mints);
+            }
         }
 
         // if identifier == second_token_payment.token_identifier {
