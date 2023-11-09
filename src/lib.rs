@@ -106,7 +106,7 @@ pub trait SellNftsContract {
             self.user_premium_mints(&caller).update(|premium_mints| *premium_mints -= amount_of_tokens);
         }
 
-        if identifier == first_token_payment.token_identifier && identifier == second_token_payment.token_identifier {
+        if identifier == first_token_payment.token_identifier || identifier == second_token_payment.token_identifier {
             user_mints += amount_of_tokens;
             let premium_mints = user_mints / MULTIPLIER;
 
