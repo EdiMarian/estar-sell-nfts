@@ -23,6 +23,16 @@ pub trait SellNftsContract {
         }
     }
 
+    #[only_owner]
+    #[payable("*")]
+    #[endpoint(removeNfts)]
+    fn remove_nfts(&self, nonces: MultiValueEncoded<u64>) {
+        for nonce in nonces.into_iter() {
+            require!(self.nonces().contains(&nonce), "This NFT doesn't exist in this SC.");
+            self.nonces().remove(&nonce);
+        }
+    }
+
     #[view(getCollection)]
     #[storage_mapper("collection")]
     fn collection(&self) -> SingleValueMapper<TokenIdentifier>;
