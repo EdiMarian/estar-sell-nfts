@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           20
+// Endpoints:                           21
 // Async Callback (empty):               1
-// Total number of exported functions:  22
+// Total number of exported functions:  23
 
 #![no_std]
 
@@ -24,6 +24,7 @@ multiversx_sc_wasm_adapter::endpoints! {
         init => init
         addSwapOperation => add_swap_operation
         clearSwapOperations => clear_swap_operations
+        withdrawToken => withdraw_token
         addToWhitelist => add_to_whitelist
         removeFromWhitelist => remove_from_whitelist
         setNfts => set_nfts

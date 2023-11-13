@@ -67,6 +67,28 @@ addToWhitelist() {
     --outfile="${PROJECT}/interactions/logs/distribute.json"
 }
 
+removeFromWhitelist() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=12000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="removeFromWhitelist" \
+    --arguments $MY_ADDRESS \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/distribute.json"
+}
+
+withdrawToken() {
+  mxpy --verbose contract call ${ADDRESS} --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=12000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="withdrawToken" \
+    --arguments $COLLECTION_ID_HEX 1214 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/distribute.json"
+}
+
 setFirstTokenPayment() {
   mxpy --verbose contract call ${ADDRESS} --recall-nonce \
     --pem=${PEM_FILE} \
@@ -119,7 +141,7 @@ mintWithOuro() {
     --gas-limit=30000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
     --function="ESDTTransfer" \
-    --arguments $OURO_ID_HEX 20000000000000000 $method_name 2 \
+    --arguments $OURO_ID_HEX 70000000000000000 $method_name 7 \
     --send \
     --outfile="${PROJECT}/interactions/logs/distribute.json"
 }

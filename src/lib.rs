@@ -29,6 +29,15 @@ pub trait SellNftsContract {
     }
 
     #[only_owner]
+    #[endpoint(withdrawToken)]
+    fn withdraw_token(&self, identifier: TokenIdentifier, nonce: u64) {
+        let caller = self.blockchain().get_caller();
+       let sc_balance = self.blockchain().get_esdt_balance(&self.blockchain().get_sc_address(), &identifier, nonce);
+
+       self.send().direct_esdt(&caller, &identifier, nonce, &sc_balance);
+    }
+
+    #[only_owner]
     #[endpoint(addToWhitelist)]
     fn add_to_whitelist(&self, addresses: MultiValueEncoded<ManagedAddress>) {
         for address in addresses.into_iter() {
