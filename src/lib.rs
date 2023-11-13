@@ -1,6 +1,7 @@
 #![no_std]
 
 const MULTIPLIER: u64 = 4;
+const DECIMALS: u64 = 1000000000000000000;
 
 multiversx_sc::imports!();
 multiversx_sc::derive_imports!();
@@ -18,6 +19,13 @@ pub trait SellNftsContract {
     fn add_swap_operation(&self, address: ManagedAddress, token_id: TokenIdentifier) {
         self.swap_operations()
             .push(&SwapOperation { address, token_id });
+    }
+
+    #[only_owner]
+    #[endpoint(clearSwapOperations)]
+    fn clear_swap_operations(&self) {
+        self.swap_operations()
+            .clear();
     }
 
     #[only_owner]
@@ -150,20 +158,25 @@ pub trait SellNftsContract {
             }
         }
         
-        if !self.user_whitelist(&caller).get() && identifier != second_token_payment.token_identifier {
+        if !self.user_whitelist(&caller).get() && identifier == first_token_payment.token_identifier {
             let mut swap_operations = MultiValueEncoded::new();
             for operation in self.swap_operations().iter() {
                 swap_operations.push(operation.to_swap_type());
             }
             let router_address = self.dex_router_address().get();
+            let amount_to_swap = (BigUint::from(900000000000000000u64) * amount.clone()) / self.token_decimals(1);
 
             let min_amount = BigUint::from(1_000u32);
             let _: IgnoreValue = self.contract_proxy(router_address).multi_pair_swap_fixed_input(&min_amount, swap_operations).with_esdt_transfer(EsdtTokenPayment::new(
                 identifier.clone(),
                 nonce,
-                amount,
+                amount_to_swap,
             )).execute_on_dest_context();
         }
+    }
+
+    fn token_decimals(&self, amount: u64) -> BigUint {
+        BigUint::from(amount) * BigUint::from(DECIMALS)
     }
 
     fn mint_single_nft(&self, address: &ManagedAddress, collection_identifier: &TokenIdentifier) {
