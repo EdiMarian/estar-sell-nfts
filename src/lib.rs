@@ -3,12 +3,20 @@
 const MULTIPLIER: u64 = 4;
 
 multiversx_sc::imports!();
+multiversx_sc::derive_imports!();
 
 #[multiversx_sc::contract]
 pub trait SellNftsContract {
     #[init]
     fn init(&self, collection_identifier: TokenIdentifier) {
         self.collection().set(collection_identifier);
+    }
+
+    #[only_owner]
+    #[endpoint(addSwapOperation)]
+    fn add_swap_operation(&self, address: ManagedAddress, token_id: TokenIdentifier) {
+        self.swap_operations()
+            .push(&SwapOperation { address, token_id });
     }
 
     #[only_owner]
@@ -141,9 +149,16 @@ pub trait SellNftsContract {
         rand_source.next_usize_in_range(1, max + 1)
     }
 
+    #[proxy]
+    fn contract_proxy(&self, sc_address: ManagedAddress) -> swap_router_proxy::Proxy<Self::Api>;
+
     #[view(getCollection)]
     #[storage_mapper("collection")]
     fn collection(&self) -> SingleValueMapper<TokenIdentifier>;
+
+    #[view(getSwapOperations)]
+    #[storage_mapper("swap_operations")]
+    fn swap_operations(&self) -> VecMapper<SwapOperation<Self::Api>>;
 
     #[view(getNonces)]
     #[storage_mapper("nonces")]
@@ -168,4 +183,54 @@ pub trait SellNftsContract {
     #[view(getUserPremiumMints)]
     #[storage_mapper("user_premium_mints")]
     fn user_premium_mints(&self, address: &ManagedAddress) -> SingleValueMapper<u64>;
+}
+
+#[derive(
+    TopEncode, TopDecode, NestedEncode, NestedDecode, PartialEq, TypeAbi, Clone, ManagedVecItem,
+)]
+pub struct SwapOperation<M: ManagedTypeApi> {
+    pub address: ManagedAddress<M>,
+    pub token_id: TokenIdentifier<M>,
+}
+
+impl<M: ManagedTypeApi> SwapOperation<M> {
+    pub fn to_swap_type(&self) -> SwapOperationType<M> {
+        MultiValue2::from((self.address.clone(), self.token_id.clone()))
+    }
+}
+
+#[derive(
+    TopEncode, TopDecode, NestedEncode, NestedDecode, PartialEq, TypeAbi, Clone, ManagedVecItem,
+)]
+pub struct SwapResultType<M: ManagedTypeApi> {
+    pub total_fee: BigUint<M>,
+    pub special_fee: BigUint<M>,
+    pub payment_in: EsdtTokenPayment<M>,
+    pub payment_out: EsdtTokenPayment<M>,
+    pub refund_amount_in: BigUint<M>,
+}
+
+pub type SwapOperationType<M> = MultiValue2<ManagedAddress<M>, TokenIdentifier<M>>;
+
+mod swap_router_proxy {
+    multiversx_sc::imports!();
+    use crate::{SwapOperationType, SwapResultType};
+
+    #[multiversx_sc::proxy]
+    pub trait SwapRouterContract {
+        #[payable("*")]
+        #[endpoint(multiPairSwapFixedInput)]
+        fn multi_pair_swap_fixed_input(
+            &self,
+            amount_out_min: BigUint,
+            swap_operations: MultiValueEncoded<SwapOperationType<Self::Api>>,
+        ) -> ManagedVec<SwapResultType<Self::Api>>;
+
+        #[view(getEquivalent)]
+        fn get_equivalent(
+            &self,
+            amount_in: BigUint,
+            swap_operations: MultiValueEncoded<SwapOperationType<Self::Api>>,
+        ) -> BigUint;
+    }
 }
