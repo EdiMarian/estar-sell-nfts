@@ -5,9 +5,9 @@
 ////////////////////////////////////////////////////
 
 // Init:                                 1
-// Endpoints:                           15
+// Endpoints:                           19
 // Async Callback (empty):               1
-// Total number of exported functions:  17
+// Total number of exported functions:  21
 
 #![no_std]
 
@@ -23,6 +23,8 @@ multiversx_sc_wasm_adapter::endpoints! {
     (
         init => init
         addSwapOperation => add_swap_operation
+        addToWhitelist => add_to_whitelist
+        removeFromWhitelist => remove_from_whitelist
         setNfts => set_nfts
         removeNfts => remove_nfts
         setFirstTokenPayment => set_first_token_payment
@@ -30,11 +32,13 @@ multiversx_sc_wasm_adapter::endpoints! {
         setThirdTokenPayment => set_third_token_payment
         mint => mint
         getCollection => collection
+        getDexRouterAddress => dex_router_address
         getSwapOperations => swap_operations
         getNonces => nonces
         getFirstTokenPayment => first_token_payment
         getSecondTokenPayment => second_token_payment
         getThirdTokenPayment => third_token_payment
+        getUserWhitelist => user_whitelist
         getUserMints => user_mints
         getUserPremiumMints => user_premium_mints
     )

@@ -8,8 +8,9 @@ multiversx_sc::derive_imports!();
 #[multiversx_sc::contract]
 pub trait SellNftsContract {
     #[init]
-    fn init(&self, collection_identifier: TokenIdentifier) {
+    fn init(&self, collection_identifier: TokenIdentifier, dex_address: ManagedAddress) {
         self.collection().set(collection_identifier);
+        self.dex_router_address().set(dex_address);
     }
 
     #[only_owner]
@@ -17,6 +18,22 @@ pub trait SellNftsContract {
     fn add_swap_operation(&self, address: ManagedAddress, token_id: TokenIdentifier) {
         self.swap_operations()
             .push(&SwapOperation { address, token_id });
+    }
+
+    #[only_owner]
+    #[endpoint(addToWhitelist)]
+    fn add_to_whitelist(&self, addresses: MultiValueEncoded<ManagedAddress>) {
+        for address in addresses.into_iter() {
+            self.user_whitelist(&address).set(true);
+        }
+    }
+
+    #[only_owner]
+    #[endpoint(removeFromWhitelist)]
+    fn remove_from_whitelist(&self, addresses: MultiValueEncoded<ManagedAddress>) {
+        for address in addresses.into_iter() {
+            self.user_whitelist(&address).set(false);
+        }
     }
 
     #[only_owner]
@@ -132,6 +149,21 @@ pub trait SellNftsContract {
                 self.mint_single_nft(&caller, &collection_identifier);
             }
         }
+        
+        if !self.user_whitelist(&caller).get() && identifier != second_token_payment.token_identifier {
+            let mut swap_operations = MultiValueEncoded::new();
+            for operation in self.swap_operations().iter() {
+                swap_operations.push(operation.to_swap_type());
+            }
+            let router_address = self.dex_router_address().get();
+
+            let min_amount = BigUint::from(1_000u32);
+            let _: IgnoreValue = self.contract_proxy(router_address).multi_pair_swap_fixed_input(&min_amount, swap_operations).with_esdt_transfer(EsdtTokenPayment::new(
+                identifier.clone(),
+                nonce,
+                amount,
+            )).execute_on_dest_context();
+        }
     }
 
     fn mint_single_nft(&self, address: &ManagedAddress, collection_identifier: &TokenIdentifier) {
@@ -156,6 +188,10 @@ pub trait SellNftsContract {
     #[storage_mapper("collection")]
     fn collection(&self) -> SingleValueMapper<TokenIdentifier>;
 
+    #[view(getDexRouterAddress)]
+    #[storage_mapper("dex_router_address")]
+    fn dex_router_address(&self) -> SingleValueMapper<ManagedAddress>;
+
     #[view(getSwapOperations)]
     #[storage_mapper("swap_operations")]
     fn swap_operations(&self) -> VecMapper<SwapOperation<Self::Api>>;
@@ -175,6 +211,10 @@ pub trait SellNftsContract {
     #[view(getThirdTokenPayment)]
     #[storage_mapper("third_token_payment")]
     fn third_token_payment(&self) -> SingleValueMapper<EsdtTokenPayment>;
+
+    #[view(getUserWhitelist)]
+    #[storage_mapper("user_whitelist")]
+    fn user_whitelist(&self, address: &ManagedAddress) -> SingleValueMapper<bool>;
 
     #[view(getUserMints)]
     #[storage_mapper("user_mints")]
