@@ -1,17 +1,17 @@
 {
     "emittedTransaction": {
-        "nonce": 1768,
+        "nonce": 1821,
         "value": "0",
         "receiver": "erd1qqqqqqqqqqqqqpgqcc2dakhdz23hk8gvlnn054uhzzeewn5xwmfsyqdssd",
         "sender": "erd1szcgm7vq3tmyxfgd4wd2k2emh59az8jq5jjpj9799a0k59u0wmfss4vw3v",
         "gasPrice": 1000000000,
-        "gasLimit": 12000000,
-        "data": "d2l0aGRyYXdUb2tlbkA0ODRGNTI1MzQ1NTMyRDY0MzYzNzM3NjMzOEAwNEJF",
+        "gasLimit": 30000000,
+        "data": "RVNEVFRyYW5zZmVyQDRGNTU1MjRGMkQzOTY1NjM2NDM2NjFAMEU2RUQyN0Q2NjY4MDAwMEA2RDY5NkU3NEAwMQ==",
         "chainID": "1",
         "version": 2,
-        "signature": "37ac5a42ed218c53484368662175b4131e45ec56594eb838ab29f5341cf348f556d8fbc6c45a8e0ea8ca54feb7d4108cba14c06a6f3d9ae521f773ab1993160e"
+        "signature": "01ed0eafb0a67b0aae6b2815c65f89b1e1731e5d0a111ce2713dd938ed4602f2eeae32b474f30a35a099c57df0ff86b26c8a65e6e9f541351e336065d1d7c303"
     },
-    "emittedTransactionData": "withdrawToken@484F525345532D643637376338@04BE",
-    "emittedTransactionHash": "9afa568e63639b85222d593a53f99922d70edcc7f5aea2f070f6a714aed3b504",
+    "emittedTransactionData": "ESDTTransfer@4F55524F2D396563643661@0E6ED27D66680000@6D696E74@01",
+    "emittedTransactionHash": "3be2291b75b51e354cdb8f44b999fcbf0813146218e3c6bf65373af39826e86e",
     "contractAddress": "erd1qqqqqqqqqqqqqpgqcc2dakhdz23hk8gvlnn054uhzzeewn5xwmfsyqdssd"
 }

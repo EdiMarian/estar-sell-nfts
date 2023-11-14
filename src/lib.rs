@@ -15,6 +15,13 @@ pub trait SellNftsContract {
     }
 
     #[only_owner]
+    #[endpoint(setPause)]
+    fn set_pause(&self) {
+        self.pause()
+            .set(!self.pause().get());
+    }
+
+    #[only_owner]
     #[endpoint(addSwapOperation)]
     fn add_swap_operation(&self, address: ManagedAddress, token_id: TokenIdentifier) {
         self.swap_operations()
@@ -213,6 +220,10 @@ pub trait SellNftsContract {
     #[view(getDexRouterAddress)]
     #[storage_mapper("dex_router_address")]
     fn dex_router_address(&self) -> SingleValueMapper<ManagedAddress>;
+
+    #[view(isPaused)]
+    #[storage_mapper("pause")]
+    fn pause(&self) -> SingleValueMapper<bool>;
 
     #[view(getSwapOperations)]
     #[storage_mapper("swap_operations")]

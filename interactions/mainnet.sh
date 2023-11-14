@@ -1,12 +1,12 @@
 PROJECT="${PWD}"
 
-COLLECTION_ID="HORSES-d677c8"
+COLLECTION_ID="BLOODSHED-a62781"
 COLLECTION_ID_HEX="0x$(echo -n ${COLLECTION_ID} | xxd -p -u | tr -d '\n')"
 
 OURO_ID="OURO-9ecd6a"
 OURO_ID_HEX="0x$(echo -n ${OURO_ID} | xxd -p -u | tr -d '\n')"
 
-SFTS_ID="XCASTLE-ee733b"
+SFTS_ID="DHLOTTERY-f6fc85"
 SFTS_ID_HEX="0x$(echo -n ${SFTS_ID} | xxd -p -u | tr -d '\n')"
 
 VST_ID="VST-c40502"
@@ -141,7 +141,18 @@ mintWithOuro() {
     --gas-limit=30000000 \
     --proxy=${PROXY} --chain=${CHAINID} \
     --function="ESDTTransfer" \
-    --arguments $OURO_ID_HEX 70000000000000000 $method_name 7 \
+    --arguments $OURO_ID_HEX 1040000000000000000 $method_name 1 \
+    --send \
+    --outfile="${PROJECT}/interactions/logs/distribute.json"
+}
+
+setUserFarm() {
+  mxpy --verbose contract call erd1qqqqqqqqqqqqqpgqplw6qj45dvvdfcf7dcl30rp3y5zl0arawmfs6ratsj --recall-nonce \
+    --pem=${PEM_FILE} \
+    --gas-limit=30000000 \
+    --proxy=${PROXY} --chain=${CHAINID} \
+    --function="setUserFarm" \
+    --arguments $MY_ADDRESS 0 \
     --send \
     --outfile="${PROJECT}/interactions/logs/distribute.json"
 }
@@ -182,5 +193,15 @@ getUserMints() {
 
 getDexRouterAddress() {
   mxpy --verbose contract query ${ADDRESS} --function="getDexRouterAddress" \
+    --proxy=${PROXY}
+}
+
+getNonces() {
+  mxpy --verbose contract query ${ADDRESS} --function="getNonces" \
+    --proxy=${PROXY}
+}
+
+getSwapOperations() {
+  mxpy --verbose contract query ${ADDRESS} --function="getSwapOperations" \
     --proxy=${PROXY}
 }
