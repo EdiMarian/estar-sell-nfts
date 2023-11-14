@@ -119,6 +119,7 @@ pub trait SellNftsContract {
     #[payable("*")]
     #[endpoint(mint)]
     fn mint(&self, amount_of_tokens: u64) {
+        require!(!self.pause().get(), "The minting is stopped!");
         let (identifier, nonce, amount) = self.call_value().single_esdt().into_tuple();
         let caller = self.blockchain().get_caller();
         let first_token_payment = self.first_token_payment().get();
